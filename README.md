@@ -73,7 +73,7 @@ The server will initialize locally:
 
 ### 4. Open the App
 Open your web browser and navigate to:
-👉 **[http://127.0.0.1:5000](http://127.0.0.1:5000)**
+👉 **[http://127.0.0.1:5000](http://127.0.0.1:5000)** *(includes Floating Toast Notifications, Copy to Clipboard, Export to CSV)*
 
 ---
 
