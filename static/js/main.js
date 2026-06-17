@@ -6,6 +6,7 @@ let selectedUpdateForTweet = null; // Stored update context for Twitter modal
 
 // DOM Elements
 const btnRefresh = document.getElementById('btn-refresh');
+const btnExportCsv = document.getElementById('btn-export-csv');
 const refreshIcon = document.getElementById('refresh-icon');
 const lastUpdatedText = document.getElementById('last-updated-text');
 const releasesTimeline = document.getElementById('releases-timeline');
@@ -46,6 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     // Refresh Button
     btnRefresh.addEventListener('click', fetchReleaseNotes);
+
+    // Export CSV Button
+    if (btnExportCsv) {
+        btnExportCsv.addEventListener('click', exportToCsv);
+    }
 
     // Search Input
     searchInput.addEventListener('input', (e) => {
@@ -314,6 +320,9 @@ function renderTimeline() {
                             <span class="card-date">${entry.date}</span>
                         </div>
                         <div class="card-actions">
+                            <button class="action-btn copy-btn" title="Copy to Clipboard" onclick="copyUpdateToClipboard('${entry.date}', '${update.type}', ${JSON.stringify(encodeURIComponent(update.body))}, this)">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
                             <button class="action-btn tweet-btn" title="Compose Tweet for this update" onclick="openTweetComposer('${entry.date}', '${update.type}', ${JSON.stringify(encodeURIComponent(update.body))})">
                                 <i class="fa-brands fa-x-twitter"></i>
                             </button>
@@ -537,3 +546,83 @@ function closeTwitterModal() {
         selectedUpdateForTweet = null;
     }, 300);
 }
+
+// Copy update details to clipboard
+window.copyUpdateToClipboard = function(date, type, encodedBody, button) {
+    const bodyHtml = decodeURIComponent(encodedBody);
+    const cleanText = cleanTextForTweet(bodyHtml);
+    const textToCopy = `BigQuery Update (${date}) - [${type}]: ${cleanText}`;
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        // Change icon to a checkmark for feedback
+        const icon = button.querySelector('i');
+        icon.className = 'fa-solid fa-check';
+        icon.style.color = 'var(--color-feature)';
+        
+        setTimeout(() => {
+            icon.className = 'fa-regular fa-copy';
+            icon.style.color = '';
+        }, 1500);
+    }).catch(err => {
+        console.error('Clipboard copy failed:', err);
+        alert('Failed to copy to clipboard.');
+    });
+};
+
+// Export active filtered releases list to CSV file
+window.exportToCsv = function() {
+    if (releaseNotes.length === 0) {
+        alert("No release notes available to export.");
+        return;
+    }
+    
+    // Header row
+    let csvContent = "Date,Type,Description\r\n";
+    
+    let rowsCount = 0;
+    releaseNotes.forEach(entry => {
+        const filteredUpdates = entry.updates.filter(update => {
+            // Type Filter
+            if (activeFilter !== 'all') {
+                if (activeFilter === 'Breaking Change') {
+                    if (update.type !== 'Breaking Change' && update.type !== 'Deprecated') return false;
+                } else if (update.type !== activeFilter) {
+                    return false;
+                }
+            }
+            
+            // Search Filter
+            if (searchQuery) {
+                const textContent = (update.type + ' ' + stripHtml(update.body)).toLowerCase();
+                if (!textContent.includes(searchQuery)) return false;
+            }
+            
+            return true;
+        });
+        
+        filteredUpdates.forEach(update => {
+            const date = entry.date.replace(/"/g, '""');
+            const type = update.type.replace(/"/g, '""');
+            const cleanBody = stripHtml(update.body).replace(/\s+/g, ' ').trim().replace(/"/g, '""');
+            
+            csvContent += `"${date}","${type}","${cleanBody}"\r\n`;
+            rowsCount++;
+        });
+    });
+    
+    if (rowsCount === 0) {
+        alert("No release notes found to export with the current filter settings.");
+        return;
+    }
+    
+    // Create Blob & Trigger Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `bigquery_release_notes_${activeFilter.replace(/\s+/g, '_').toLowerCase()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
