@@ -575,6 +575,24 @@ function toggleTheme() {
     }
 }
 
+// Show toast notification
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    // Auto dismiss after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-slide-out');
+        // Remove after animation (assumes 0.5s)
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 500);
+    }, 3000);
+}
+
 // Copy update details to clipboard
 window.copyUpdateToClipboard = function(date, type, encodedBody, button) {
     const bodyHtml = decodeURIComponent(encodedBody);
@@ -591,16 +609,18 @@ window.copyUpdateToClipboard = function(date, type, encodedBody, button) {
             icon.className = 'fa-regular fa-copy';
             icon.style.color = '';
         }, 1500);
+        // Show success toast
+        showToast('Copied to clipboard!', 'success');
     }).catch(err => {
         console.error('Clipboard copy failed:', err);
-        alert('Failed to copy to clipboard.');
+        showToast('Failed to copy to clipboard.', 'error');
     });
 };
 
 // Export active filtered releases list to CSV file
 window.exportToCsv = function() {
     if (releaseNotes.length === 0) {
-        alert("No release notes available to export.");
+        showToast('No release notes available to export.', 'warning');
         return;
     }
     
@@ -639,7 +659,7 @@ window.exportToCsv = function() {
     });
     
     if (rowsCount === 0) {
-        alert("No release notes found to export with the current filter settings.");
+        showToast('No release notes found to export with the current filter settings.', 'warning');
         return;
     }
     
