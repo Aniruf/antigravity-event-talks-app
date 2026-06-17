@@ -10,7 +10,10 @@ A modern, high-fidelity web application built with Python Flask, HTML5, JavaScri
 *   **Interactive Search & Badging:** Supports real-time text query searching and categorization filters (e.g. *Features*, *Announcements*, *Deprecated*, *Breaking Changes*) with interactive counts.
 *   **Aesthetic Dark UI:** Implements a slate dark-mode design system using fluid transitions, skeleton loaders (shimmering UI placeholders), active status beacons, and mobile responsiveness.
 *   **In-Memory Resilient Cache:** Falls back automatically to cached JSON copies if Google's servers are rate-limited or offline.
-
+*   **In-Memory Resilient Cache:** Falls back automatically to cached JSON copies if Google's servers are rate-limited or offline.
+*   **Floating Toast Notifications:** Unobtrusive success, warning, and error messages for actions like copy and export.
+*   **Copy to Clipboard:** One‑click copy of release updates with visual feedback.
+*   **Export to CSV:** Export filtered release notes to a CSV file with proper handling.
 ---
 
 ## 🛠️ Tech Stack
