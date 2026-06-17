@@ -7,6 +7,8 @@ let selectedUpdateForTweet = null; // Stored update context for Twitter modal
 // DOM Elements
 const btnRefresh = document.getElementById('btn-refresh');
 const btnExportCsv = document.getElementById('btn-export-csv');
+const btnThemeToggle = document.getElementById('btn-theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
 const refreshIcon = document.getElementById('refresh-icon');
 const lastUpdatedText = document.getElementById('last-updated-text');
 const releasesTimeline = document.getElementById('releases-timeline');
@@ -39,6 +41,13 @@ const hashtagTags = document.querySelectorAll('.hashtag-tag');
 
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
+    // Check and apply stored theme preference
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        if (themeIcon) themeIcon.className = 'fa-solid fa-sun';
+    }
+
     fetchReleaseNotes();
     setupEventListeners();
 });
@@ -51,6 +60,11 @@ function setupEventListeners() {
     // Export CSV Button
     if (btnExportCsv) {
         btnExportCsv.addEventListener('click', exportToCsv);
+    }
+
+    // Theme Toggle Button
+    if (btnThemeToggle) {
+        btnThemeToggle.addEventListener('click', toggleTheme);
     }
 
     // Search Input
@@ -545,6 +559,20 @@ function closeTwitterModal() {
         twitterModal.style.display = 'none';
         selectedUpdateForTweet = null;
     }, 300);
+}
+
+// Toggle page theme (Dark/Light)
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    
+    // Cache preference locally
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    
+    // Toggle sun/moon iconography
+    if (themeIcon) {
+        themeIcon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
 }
 
 // Copy update details to clipboard
